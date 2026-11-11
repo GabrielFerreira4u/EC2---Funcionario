@@ -12,13 +12,14 @@
     <p><label>Idade: <input type="number" id="idade" min="0"></label></p>
     <p><label>Cargo: <input type="text" id="cargo"></label></p>
     <p><label>Salário (R$): <input type="number" id="salario" min="0" step="0.01"></label></p>
-    <button type="button" onclick="cadastrarFuncionario()">Cadastrar</button>
+    <button type="button" id="btnSalvar">Cadastrar</button>
+    <button type="button" id="btnCancelar" hidden>Cancelar edição</button>
   </form>
 
   <h2>Funcionários cadastrados</h2>
   <table border="1" cellpadding="4">
     <thead>
-      <tr><th>ID</th><th>Nome</th><th>Idade</th><th>Cargo</th><th>Salário</th></tr>
+      <tr><th>ID</th><th>Nome</th><th>Idade</th><th>Cargo</th><th>Salário</th><th>Ações</th></tr>
     </thead>
     <tbody id="tabelaFuncionarios"></tbody>
   </table>
