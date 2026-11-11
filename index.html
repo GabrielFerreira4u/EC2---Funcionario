@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Funcionários</title>
+</head>
+<body>
+  <h1>Cadastro de Funcionários</h1>
+
+  <form id="formFuncionario">
+    <p><label>Nome: <input type="text" id="nome"></label></p>
+    <p><label>Idade: <input type="number" id="idade" min="0"></label></p>
+    <p><label>Cargo: <input type="text" id="cargo"></label></p>
+    <p><label>Salário (R$): <input type="number" id="salario" min="0" step="0.01"></label></p>
+    <button type="button" onclick="cadastrarFuncionario()">Cadastrar</button>
+  </form>
+
+  <h2>Funcionários cadastrados</h2>
+  <table border="1" cellpadding="4">
+    <thead>
+      <tr><th>ID</th><th>Nome</th><th>Idade</th><th>Cargo</th><th>Salário</th></tr>
+    </thead>
+    <tbody id="tabelaFuncionarios"></tbody>
+  </table>
+
+  <script src="funcionario.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
