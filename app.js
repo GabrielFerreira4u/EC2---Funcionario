@@ -139,4 +139,36 @@ document.getElementById("btnTodos").addEventListener("click", () => {
   renderizarTabela();
 });
 
+// ---------- Relatórios (filter, map, reduce, Set) ----------
+const relatorio = document.getElementById("relatorio");
+const mostrar = (texto) => (relatorio.textContent = texto);
+const moeda = (v) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+document.getElementById("btnAcima5000").addEventListener("click", () => {
+  const ricos = funcionarios.filter((f) => f.salario > 5000);
+  mostrar(
+    ricos.length
+      ? "Salário maior que R$ 5.000:\n" + ricos.map((f) => "- " + f.toString()).join("\n")
+      : "Nenhum funcionário com salário acima de R$ 5.000."
+  );
+});
+
+document.getElementById("btnMedia").addEventListener("click", () => {
+  if (funcionarios.length === 0) return mostrar("Sem funcionários cadastrados.");
+  const media = funcionarios.reduce((soma, f) => soma + f.salario, 0) / funcionarios.length;
+  mostrar("Média salarial: " + moeda(media));
+});
+
+document.getElementById("btnCargos").addEventListener("click", () => {
+  if (funcionarios.length === 0) return mostrar("Sem funcionários cadastrados.");
+  const cargos = [...new Set(funcionarios.map((f) => f.cargo))];
+  mostrar("Cargos únicos:\n" + cargos.map((c) => "- " + c).join("\n"));
+});
+
+document.getElementById("btnMaiusculo").addEventListener("click", () => {
+  if (funcionarios.length === 0) return mostrar("Sem funcionários cadastrados.");
+  const nomes = funcionarios.map((f) => f.nome.toUpperCase());
+  mostrar("Nomes em maiúsculo:\n" + nomes.join("\n"));
+});
+
 renderizarTabela();
