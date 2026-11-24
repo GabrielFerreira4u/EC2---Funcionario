@@ -7,12 +7,15 @@ const btnSalvar = document.getElementById("btnSalvar");
 const btnCancelar = document.getElementById("btnCancelar");
 const campoBusca = document.getElementById("campoBusca");
 const tabela = document.getElementById("tabelaFuncionarios");
+const tituloForm = document.getElementById("tituloForm");
 const campos = {
   nome: document.getElementById("nome"),
   idade: document.getElementById("idade"),
   cargo: document.getElementById("cargo"),
   salario: document.getElementById("salario"),
 };
+
+const moeda = (v) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 // ---------- Funções lambda (arrow) de manipulação do array ----------
 const buscarPorId = (id) => funcionarios.find((f) => f.id === id);
@@ -31,7 +34,25 @@ const remover = (id) => {
   funcionarios = funcionarios.filter((f) => f.id !== id);
 };
 
-// ---------- Auxiliares (arrow) ----------
+// ---------- Avisos com alert do Bootstrap ----------
+const mostrarAviso = (mensagem, tipo = "success") => {
+  const aviso = document.createElement("div");
+  aviso.className = `alert alert-${tipo} alert-dismissible fade show`;
+  aviso.setAttribute("role", "alert");
+  aviso.textContent = mensagem;
+
+  const fechar = document.createElement("button");
+  fechar.type = "button";
+  fechar.className = "btn-close";
+  fechar.setAttribute("data-bs-dismiss", "alert");
+  fechar.setAttribute("aria-label", "Fechar");
+  aviso.appendChild(fechar);
+
+  document.getElementById("avisos").appendChild(aviso);
+  setTimeout(() => aviso.remove(), 3500);
+};
+
+// ---------- Formulário (arrow) ----------
 const lerFormulario = () => ({
   nome: campos.nome.value.trim(),
   idade: Number(campos.idade.value),
@@ -50,11 +71,36 @@ const limparFormulario = () => {
   idEdicao = null;
   btnSalvar.textContent = "Cadastrar";
   btnCancelar.hidden = true;
+  tituloForm.textContent = "Cadastrar funcionário";
+};
+
+// ---------- Resumo (cards do topo) ----------
+const atualizarResumo = () => {
+  const total = funcionarios.length;
+  const media = total ? funcionarios.reduce((s, f) => s + f.salario, 0) / total : null;
+  document.getElementById("resumoTotal").textContent = total;
+  document.getElementById("resumoMedia").textContent = media === null ? "–" : moeda(media);
+  document.getElementById("resumoCargos").textContent = new Set(funcionarios.map((f) => f.cargo)).size;
 };
 
 // ---------- Renderização ----------
+const criarBotao = (texto, classe, aoClicar) => {
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = `btn btn-sm ${classe}`;
+  btn.textContent = texto;
+  btn.addEventListener("click", aoClicar);
+  return btn;
+};
+
 const renderizarTabela = (lista = funcionarios) => {
   tabela.innerHTML = "";
+
+  if (lista.length === 0) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = '<td colspan="6" class="text-center text-muted py-4">Nenhum funcionário encontrado.</td>';
+    tabela.appendChild(tr);
+  }
 
   lista.forEach((f) => {
     const tr = document.createElement("tr");
@@ -65,42 +111,43 @@ const renderizarTabela = (lista = funcionarios) => {
       tr.appendChild(td);
     });
 
-    const btnEditar = document.createElement("button");
-    btnEditar.textContent = "Editar";
-    btnEditar.addEventListener("click", function () {
-      const func = buscarPorId(f.id);
-      campos.nome.value = func.nome;
-      campos.idade.value = func.idade;
-      campos.cargo.value = func.cargo;
-      campos.salario.value = func.salario;
-      idEdicao = func.id;
-      btnSalvar.textContent = "Salvar alterações";
-      btnCancelar.hidden = false;
-      console.log("Editando:", func.toString());
-    });
-
-    const btnExcluir = document.createElement("button");
-    btnExcluir.textContent = "Excluir";
-    btnExcluir.addEventListener("click", function () {
-      if (confirm(`Excluir ${f.nome}?`)) {
-        remover(f.id);
-        if (idEdicao === f.id) limparFormulario();
-        renderizarTabela();
-        console.log("Excluído:", f.nome);
-      }
-    });
-
     const tdAcoes = document.createElement("td");
-    tdAcoes.append(btnEditar, " ", btnExcluir);
+    tdAcoes.className = "text-end text-nowrap";
+    tdAcoes.append(
+      criarBotao("Editar", "btn-outline-warning", function () {
+        const func = buscarPorId(f.id);
+        campos.nome.value = func.nome;
+        campos.idade.value = func.idade;
+        campos.cargo.value = func.cargo;
+        campos.salario.value = func.salario;
+        idEdicao = func.id;
+        btnSalvar.textContent = "Salvar alterações";
+        btnCancelar.hidden = false;
+        tituloForm.textContent = "Editar funcionário";
+        console.log("Editando:", func.toString());
+      }),
+      " ",
+      criarBotao("Excluir", "btn-outline-danger", function () {
+        if (confirm(`Excluir ${f.nome}?`)) {
+          remover(f.id);
+          if (idEdicao === f.id) limparFormulario();
+          renderizarTabela();
+          mostrarAviso("Funcionário excluído com sucesso!", "danger");
+          console.log("Excluído:", f.nome);
+        }
+      })
+    );
     tr.appendChild(tdAcoes);
     tabela.appendChild(tr);
   });
+
+  atualizarResumo();
 };
 
 // ---------- Eventos: funções anônimas nos cliques ----------
 btnSalvar.addEventListener("click", function () {
   if (!formularioValido()) {
-    alert("Preencha todos os campos.");
+    mostrarAviso("Preencha todos os campos.", "warning");
     return;
   }
 
@@ -108,9 +155,11 @@ btnSalvar.addEventListener("click", function () {
 
   if (idEdicao === null) {
     adicionar(dados);
+    mostrarAviso("Funcionário cadastrado com sucesso!");
     console.log("Cadastrado:", dados.nome);
   } else {
     atualizar(idEdicao, dados);
+    mostrarAviso("Funcionário atualizado com sucesso!", "info");
     console.log("Atualizado:", dados.nome);
   }
 
@@ -142,7 +191,6 @@ document.getElementById("btnTodos").addEventListener("click", () => {
 // ---------- Relatórios (filter, map, reduce, Set) ----------
 const relatorio = document.getElementById("relatorio");
 const mostrar = (texto) => (relatorio.textContent = texto);
-const moeda = (v) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 document.getElementById("btnAcima5000").addEventListener("click", () => {
   const ricos = funcionarios.filter((f) => f.salario > 5000);
